@@ -1,0 +1,34 @@
+In this pipeline, we leverage an open-source(LLM)—for example, BLIP-2 or mPLUG-Owl—to directly bridge between image inputs and text outputs. Here’s how it fits into our extraction workflow:
+
+1. **Model Selection & Initialization**  
+   - Choose any publicly available multimodal checkpoint on Hugging Face (e.g. `Salesforce/blip2-opt-2.7b`, `OFA-Sys/mPlug-Owl`).  
+   - Load both its *processor* (for image preprocessing + tokenization) and *model* (for conditional generation).  
+
+2. **Image Preprocessing**  
+   - Convert each scanned prescription image to RGB and resize/pad as required by the processor.  
+   - Normalize pixel values and package into a PyTorch tensor via the processor’s `__call__` interface.
+
+3. **Prompting for Transcription**  
+   - Use a lightweight “zero-shot” captioning prompt (e.g. “Describe the text in detail”) or an explicit instruction like:  
+     ```
+     “You are a medical assistant. Read this prescription and output all medicines, dosages, and frequencies in free-text form.”
+     ```  
+   - Feed the processed image tensor plus optional textual prompt into `model.generate()` to produce token IDs.
+
+4. **Decoding & Post-Processing**  
+   - Decode generated token IDs back into a plaintext string, stripping any special tokens.  
+   - Optionally apply simple rules (lowercasing, whitespace normalization) to clean up obvious OCR artifacts.
+
+5. **Downstream Structuring**  
+   - Treat the model’s free-text output as the “transcript.”  
+   - Use a regex or a small LLM-based NER prompt to parse out structured fields (`medicine`, `dosage`, `frequency`).
+
+6. **Advantages of Multimodal LLMs**  
+   - **Contextual Understanding**: Unlike plain OCR, the LLM can leverage its world knowledge to resolve ambiguous letter shapes or common medical abbreviations.  
+   - **Flexibility**: A single model handles varied handwriting styles without retraining a separate OCR engine.  
+   - **Prompt-driven Adaptation**: You can refine transcription quality simply by tweaking the natural-language instruction, rather than retraining.
+
+7. **Potential Improvements**  
+   - **Fine-tuning**: Adapt the multimodal model on a small set of manually annotated prescriptions for domain-specific accuracy.  
+   - **Chained Prompting**: First generate a line-by-line transcript, then follow up with an extraction prompt to reduce hallucinations.  
+   - **Ensembling**: Combine outputs from multiple open-source multimodal models to boost recall on rare drug names.

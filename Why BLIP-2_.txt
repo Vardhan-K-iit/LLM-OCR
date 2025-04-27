@@ -1,0 +1,23 @@
+BLIP-2 was chosen here because it strikes an excellent balance of accuracy, flexibility and ease-of-use for vision-language tasks like prescription transcription. Key highlights:
+
+1. **Strong Vision-Language Alignment**  
+   • BLIP-2’s dual-stage pretraining (image encoder + frozen LLM) learns rich cross-modal representations, so it can “understand” messy handwriting in context rather than treating it as raw OCR characters.  
+   • This contextual grounding helps it resolve ambiguous strokes or medical abbreviations more reliably than purely vision-based OCR engines.
+
+2. **Zero- and Few-Shot Capability**  
+   • Out of the box, BLIP-2 can caption or describe unseen image types with minimal prompt engineering—no need for large-scale fine-tuning on prescription data.  
+   • You can further improve extraction via a few example prompts (few-shot), or by fine-tuning on a small annotated set, without re-training the entire model.
+
+3. **Modular & Lightweight Inference**  
+   • The BLIP-2 architecture freezes the large language model and only trains a lightweight Q-former, dramatically reducing compute cost compared to end-to-end vision-language models.  
+   • That makes inference faster and more practical for batch processing hundreds of prescription images.
+
+4. **Seamless Hugging Face Integration**  
+   • Pretrained checkpoints (e.g. `Salesforce/blip2-opt-2.7b`) are directly available in Transformers, so you can plug-and-play with a few lines of code.  
+   • Processor classes handle all preprocessing (resizing, normalization) automatically, minimizing boilerplate.
+
+5. **Extensibility for Downstream Tasks**  
+   • Because BLIP-2 outputs free-text captions, you can chain any downstream NLP component—regex, NER LLM, or a custom parser—to extract structured fields.  
+   • If later you need to target other elements (e.g. patient name, date), you simply adjust your prompt or parser without touching the vision core.
+
+By leveraging BLIP-2, we get state-of-the-art image-to-text capabilities with minimal setup, robust performance on handwriting, and full control over how we post-process its output into structured data.
